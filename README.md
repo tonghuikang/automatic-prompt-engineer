@@ -1,6 +1,6 @@
 # Automatic Prompt Engineer
 
-This repository contains a notebook that generates and optimizes system and user prompts for classification purposes.
+This repository contains a notebook that [generates and optimizes system and user prompts](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/prompt-history-classification.html) for classification purposes.
 
 This is how classification is intended to be done.
 - (system prompt, user prompt prefix + text + user prompt suffix) -Haiku-> bot response -function-> label
@@ -11,9 +11,11 @@ The notebook will produce
 - the user prompt prefix
 - the user prompt suffix
 
-To use this notebook, you will need
+You can simply run this notebook with just
 - an Anthropic API key
-- a dataset (text -> label)
+
+If you want to change the classification task, you will need to
+- provide a dataset (text -> label)
 - define the function bot_response -> label
 - description for Opus on what instructions Haiku should follow
 
@@ -27,7 +29,7 @@ This is how prompt tuning is done
 - Repeat.
 
 This notebook will also produce
-- The [classification](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-002-diff.html) at each iteration of the prompt.
+- The [classification](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-002.html) (or just the [mistakes](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-002-diff.html)) at each iteration of the prompt.
 - The [history](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/prompt-history-classification.html) of the prompt and relevant metrics.
 - (These will be saved locally as html files)
 
