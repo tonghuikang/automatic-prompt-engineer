@@ -1,10 +1,9 @@
-# Automatic Prompt Engineer
+# Automatic Prompt Engineering for classification
 
-This repository contains a [notebook](https://nbviewer.org/github/tonghuikang/automatic-prompt-engineer/blob/master/classification.ipynb) that [generates and optimizes system and user prompts](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/prompt-history-classification.html) for classification purposes.
+Given only (text -> label), this notebook generates and optimizes system and user prompts.
 
 This is how classification is intended to be done.
-- (system prompt, user prompt prefix + text + user prompt suffix) -Haiku-> bot response -function-> label
-- The function will be defined by you (which could be just a string match)
+- (system prompt, user prompt prefix + text + user prompt suffix) -Haiku-> bot response -extract-> label
 
 The notebook will produce
 - the system prompt
@@ -12,21 +11,24 @@ The notebook will produce
 - the user prompt suffix
 
 You can simply run this notebook with just
-- an Anthropic API key
+- an Anthropic API key and an OpenAI API key
 
 If you want to change the classification task, you will need to
 - provide a dataset (text -> label)
-- define the function bot_response -> label
-- description for Opus on what instructions Haiku should follow
 
 This is how prompt tuning is done
 - Sample from the full dataset.
-- Haiku takes in (system prompt, user prompt prefix + text + user prompt suffix) and produces bot_response (the final layer values).
-- The function takes in bot_response and produces the label. The (text -> label) process is analogous to the forward pass.
-- Sample from the mistakes.
-- Opus takes in the mistakes and summarizes the mistakes (gradient calculation).
-- Opus takes in the mistake summary (gradient) and the current prompts (model parameters) update the prompts.
+- Haiku takes in (system prompt, user prompt prefix + text + user prompt suffix) and produces model_response
+- Extract the label from the model_response.
+- Sample from the mistakes and the correct results.
+- o1-mini summarizes the mistakes and update the prompts (model parameters).
 - Repeat.
+
+You will need to have these Python modules installed
+- pandas
+- scikit-learn
+- anthropic
+- openai
 
 This notebook will also produce
 - The [classification](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-002.html) (or just the [mistakes](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-002-diff.html)) at each iteration of the prompt.
@@ -44,7 +46,7 @@ I took inspiration from these works.
 
 # Design Decisions
 
-- I require the LLM to produce the reasoning, and I have a separate function to extract the predicted label.
+- I require the LLM to produce the reasoning.
   Having the reasoning provides visibility to the thought process, which helps with improving the prompt.
 - I minimized the amount of required packages.
   As of commit, you will only need to install `scikit-learn`, `pandas`, and `anthropic` Python libraries.
@@ -99,11 +101,11 @@ You do not need to label every data with a note.
 The note can be used as an input to gradient calculation and parameter updates, so that the sample is classified for the correct reasons.
 
 
-### Get Opus to put words in Claude's mouth
+### Get o1 to put words in Claude's mouth
 
 Claude allows you to specify the prefix of the response (see [Putting words in Claude's mouth](https://docs.anthropic.com/claude/reference/messages-examples#putting-words-in-claudes-mouth))
 
-Besides `system_prompt`, `user_prompt_prefix`, and `user_prompt_suffix`, you can also add `bot_reply_prefix` as a field that Opus should produce.
+Besides `system_prompt`, `user_prompt_prefix`, and `user_prompt_suffix`, you can also add `bot_reply_prefix` as a field that o1 should produce.
 
 You will need to update the `user_message` in `update_model_parameters`.
 You also need to describe in `PROMPT_UPDATE_SYSTEM_PROMPT` what `bot_reply_prefix` is for.
