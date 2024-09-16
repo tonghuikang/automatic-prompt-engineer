@@ -1,6 +1,6 @@
 # Automatic Prompt Engineering for classification
 
-Given only (text -> label), this notebook generates and optimizes system and user prompts.
+Given only (text:str, label:str), this [notebook](https://nbviewer.org/github/tonghuikang/automatic-prompt-engineer/blob/master/classification.ipynb) generates and optimizes system and user prompts.
 
 This is how classification is intended to be done.
 - (system prompt, user prompt prefix + text + user prompt suffix) -Haiku-> bot response -extract-> label
@@ -12,9 +12,6 @@ The notebook will produce
 
 You can simply run this notebook with just
 - an Anthropic API key and an OpenAI API key
-
-If you want to change the classification task, you will need to
-- provide a dataset (text -> label)
 
 This is how prompt tuning is done
 - Sample from the full dataset.
@@ -31,7 +28,7 @@ You will need to have these Python modules installed
 - openai
 
 This notebook will also produce
-- The [classification](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-002.html) (or just the [mistakes](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-002-diff.html)) at each iteration of the prompt.
+- The [classification](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-003.html) (or just the [mistakes](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-003-diff.html)) at each iteration of the prompt.
 - The [history](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/prompt-history-classification.html) of the prompt and relevant metrics.
 - (These will be saved locally as HTML files)
 
@@ -46,6 +43,9 @@ I took inspiration from these works.
 
 # Design Decisions
 
+- The only input is dataset: list[tuple[str, str]] of text and labels.
+  Nothing else.
+  It is up to o1 to understand the assignment.
 - I require the LLM to produce the reasoning.
   Having the reasoning provides visibility to the thought process, which helps with improving the prompt.
 - I minimized the amount of required packages.
@@ -60,11 +60,13 @@ I took inspiration from these works.
 
 ### Run this notebook
 
-Just add your with your Anthropic API key and you should be able to run `classification.ipynb`.
+Just add your with your Anthropic API key and OpenAI API key and you should be able to run `classification.ipynb`.
 
 You will need to clone the repository for a copy of `qiqc_truncated.csv`.
 
-It will cost approximately 40 cents per iteration, and `NUM_ITERATIONS` is 5.
+It will cost approximately 50 cents per run with `NUM_ITERATIONS` of 5.
+
+Try printing what exactly is sent to o1-mini.
 
 You may need to change `NUM_PARALLEL_FORWARD_PASS_API_CALLS` depending on the rate limit your API key can afford.
 
@@ -81,7 +83,7 @@ I recommend initializing `dataset` in the notebook with probably a copy of 50 sa
 ### Change the sampling method
 
 For the forward pass, we currently sample 100 positive and negative samples.
-For the mistake summary, we sample 10 false positives and false negatives, 5 true positives, and 5 true negatives.
+For the feedback, we sample 10 mistakes of each label, and 5 correct classification of each label.
 Otherwise, the sample is chosen totally at random.
 
 We can improve the sampling method so that the model learns better.
@@ -107,20 +109,12 @@ Claude allows you to specify the prefix of the response (see [Putting words in C
 
 Besides `system_prompt`, `user_prompt_prefix`, and `user_prompt_suffix`, you can also add `bot_reply_prefix` as a field that o1 should produce.
 
-You will need to update the `user_message` in `update_model_parameters`.
-You also need to describe in `PROMPT_UPDATE_SYSTEM_PROMPT` what `bot_reply_prefix` is for.
-
 
 ### Try a different classification task
 
 You can try out a different dataset.
 
 Another dataset I recommend is the [Quora Question Pairs dataset](https://www.kaggle.com/c/quora-question-pairs/data).
-
-You will need to need to
-- Change how the dataset is being loaded (since each sample is now a pair of questions, you need to change the delimiters)
-- Change `predict_from_final_layer` to match a different string
-- Change `PROMPT_UPDATE_SYSTEM_PROMPT` to describe what is being matched
 
 
 ### Try a non-classification task
