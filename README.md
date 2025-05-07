@@ -1,43 +1,53 @@
 # Automatic Prompt Engineering for classification
 
-Given only (text:str, label:str), this [notebook](https://nbviewer.org/github/tonghuikang/automatic-prompt-engineer/blob/master/classification.ipynb) generates and optimizes system and user prompts.
+Given only (text -> label), this notebook generates and optimizes system and user prompts for classification.
 
 This is how classification is intended to be done.
-- (system prompt, user prompt prefix + text + user prompt suffix) -Haiku-> bot response -extract-> label
+- (system prompt, user prompt prefix + text + user prompt suffix) -(lightweight model)-> bot response -extract-> label
 
-The notebook will produce
+The notebook will produce for the lightweight model (e.g. 4.1-nano, Gemini-Flash, Haiku)
 - the system prompt
 - the user prompt prefix
 - the user prompt suffix
 
 You can simply run this notebook with just
-- an Anthropic API key and an OpenAI API key
+- an OpenAI API key
+- an Anthropic API key (if you plan to use Anthropic models)
+
+If you want to change the classification task, you will need to
+- provide a dataset (text -> label)
 
 This is how prompt tuning is done
 - Sample from the full dataset.
-- Haiku takes in (system prompt, user prompt prefix + text + user prompt suffix) and produces model_response
+- The lightweight model takes in (system prompt, user prompt prefix + text + user prompt suffix) and produces model_response
 - Extract the label from the model_response.
 - Sample from the mistakes and the correct results.
-- o1-mini summarizes the mistakes and update the prompts (model parameters).
+- The heavyweight model (e.g. o4-mini) summarizes the mistakes and update the prompts (model parameters).
 - Repeat.
 
 You will need to have these Python modules installed
-- pandas
+- pandas==2.2.3
 - scikit-learn
-- anthropic
 - openai
+- anthropic>=0.50.0
 
-This notebook will also produce
-- The [classification](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-003.html) (or just the [mistakes](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/iteration-classification-003-diff.html)) at each iteration of the prompt.
-- The [history](https://tonghuikang.github.io/automatic-prompt-engineer/html_output/prompt-history-classification.html) of the prompt and relevant metrics.
-- (These will be saved locally as HTML files)
+
+# Current learnings
+
+- LLMs are still not that good at prompting.
+  It does not seem to be able to figure out the pattern in the dataset.
+  It does not seem to be able to make surgical edits to the prompts to improve performance.
+- The ability to prompt a lightweight classifier model could be a meaningful evaluation benchmark.
+  I suspect more than 50% of LLM tokens are used for a classification purpose.
+  If you cannot classify whether an output is good, you cannot generate much better outputs.
+- It is up to the model provider to train and show how their LLMs can be good at prompting.
 
 
 # References
 
 I took inspiration from these works.
 
-- [DSPy](https://dspy-docs.vercel.app/docs/building-blocks/solving_your_task) for describing how tuning a prompt engineering pipeline mirrors that tuning the parameters of a neural network.
+- [DSPy](https://web.archive.org/web/20240825142652/https://dspy-docs.vercel.app/docs/building-blocks/solving_your_task) for describing how tuning a prompt engineering pipeline mirrors that tuning the parameters of a neural network.
 - [Matt Shumer](https://twitter.com/mattshumer_/status/1770942240191373770) for showing that Opus is a very good prompt engineer, and Haiku is sufficiently good at following instructions.
 
 
@@ -123,3 +133,8 @@ You are either wrong or correct at a classification task.
 For non-classification tasks, it is more difficult to evaluate how good your output is.
 You need to think of how to evaluate whether the model is making a mistake, and how to update the prompts.
 I think it is still useful to keep most of the structure of the notebook.
+
+
+### Build a webapp
+
+Maybe you can build a simple webapp where the user do not even need to run a notebook.
